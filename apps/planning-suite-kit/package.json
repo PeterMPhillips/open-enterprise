@@ -6,7 +6,7 @@
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
-    "start:kit": "../../node_modules/@aragon/cli-monorepo/packages/aragon-cli/dist/cli.js run --template PlanningKit --template-init @ARAGON_ENS --client-version 5199d2f3356566a5bf5a5dc74ebc61a7d9b3d32a --client-repo https://github.com/AutarkLabs/aragon",
+    "start:kit": "../../../cli/packages/aragon-cli/dist/cli.js run --template PlanningKit --template-init @ARAGON_ENS --client-version 5199d2f3356566a5bf5a5dc74ebc61a7d9b3d32a --client-repo https://github.com/AutarkLabs/aragon",
     "start:kit:no:client": "aragon run --template PlanningKit --template-init @ARAGON_ENS --no-client",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
