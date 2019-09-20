@@ -37,7 +37,8 @@ start_testrpc() {
 		rm -rf ~/.ipfs
 		aragon devchain --reset --port "$testrpc_port" &
 	elif [ "$DEV" = true ]; then
-		aragon devchain --reset --port "$testrpc_port" &
+		../cli/packages/aragon-cli/dist/cli.js devchain --reset --port "$testrpc_port" &
+		sleep 10 # wait for devchain to start TODO: modify cli to return rather than require interruption
 		npm run frontend &
 	elif [ "$NO_CLIENT" = true ]; then
 		aragon devchain --reset --port "$testrpc_port" &
