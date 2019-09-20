@@ -40,7 +40,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     return state
   }
   case REQUESTED_GITHUB_TOKEN_SUCCESS: {
-    const { token } = action
+    const { token } = returnValues
     if (token) {
       initializeGraphQLClient(token)
     }
