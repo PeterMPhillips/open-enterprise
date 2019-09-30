@@ -33,7 +33,6 @@ import { STATUS } from '../utils/github'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract) => {
   const { event, returnValues, address } = action
-  let nextState = { ...state }
 
   switch (event) {
   case REQUESTING_GITHUB_TOKEN: {
@@ -48,96 +47,86 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     const loadedRepos = await loadReposFromQueue(state)
 
     const status = STATUS.AUTHENTICATED
-    const github = {
+    state.github = {
       token,
       status,
       event: null
     }
-    const repos = [ ...state.repos, ...loadedRepos ]
+    state.repos = [ ...state.repos, ...loadedRepos ]
 
-    return { ...nextState, github, repos }
+    return state
   }
   case REQUESTED_GITHUB_TOKEN_FAILURE: {
     return state
   }
   case REQUESTED_GITHUB_DISCONNECT: {
-    const { github } = INITIAL_STATE
-    nextState = { ...state, github }
-    return nextState
+    state.github = INITIAL_STATE
+    return state
   }
   case REPO_ADDED: {
-    nextState = await syncRepos(nextState, returnValues)
-    return nextState
+    return await syncRepos(state, returnValues)
   }
   case REPO_REMOVED: {
     const id = returnValues.repoId
-    const repoIndex = nextState.repos.findIndex(repo => repo.id === id)
-    if (repoIndex === -1) return nextState
-    nextState.repos.splice(repoIndex,1)
-    return nextState
+    const repoIndex = state.repos.findIndex(repo => repo.id === id)
+    if (repoIndex === -1) return state
+    state.repos.splice(repoIndex,1)
+    return state
   }
   case BOUNTY_ADDED: {
-    if(!returnValues) return nextState
+    if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData, [])
-    return nextState
+    return syncIssues(state, returnValues, issueData, [])
   }
   case ASSIGNMENT_REQUESTED: {
-    if(!returnValues) return nextState
+    if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
-    return nextState
+    return syncIssues(state, returnValues, issueData)
   }
   case ASSIGNMENT_APPROVED: {
-    if(!returnValues) return nextState
+    if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
-    return nextState
+    return syncIssues(state, returnValues, issueData)
   }
   case SUBMISSION_REJECTED: {
-    if(!returnValues) return nextState
+    if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
-    return nextState
+    return syncIssues(state, returnValues, issueData)
   }
   case WORK_SUBMITTED: {
-    if(!returnValues) return nextState
+    if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
-    return nextState
+    return syncIssues(state, returnValues, issueData)
   }
   case SUBMISSION_ACCEPTED: {
-    if (!returnValues) return nextState
+    if (!returnValues) return state
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
-    return nextState
+    return syncIssues(state, returnValues, issueData)
   }
   case BOUNTY_SETTINGS_CHANGED:
-    nextState = await syncSettings(nextState) // No returnValues on this
-    nextState = await syncTokens(nextState, { token: nextState.bountySettings.bountyCurrency }, vaultContract )
-    return nextState
+    state = await syncSettings(state) // No returnValues on this
+    return await syncTokens(state, { token: state.bountySettings.bountyCurrency }, vaultContract )
   case VAULT_DEPOSIT:
-    if (vaultAddress !== address) return nextState
-    nextState = await syncTokens(nextState, returnValues, vaultContract)
-    return nextState
+    if (vaultAddress !== address) return state
+    return await syncTokens(state, returnValues, vaultContract)
   default:
-    return nextState
+    return state
   }
 }
